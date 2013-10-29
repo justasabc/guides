@@ -1,0 +1,20 @@
+#!/bin/bash
+for filename in $(ls)
+do
+	echo $filename
+	# Take extension available in a filename
+        ext=${filename##*\.}
+	echo $ext
+        case "$ext" in
+        c) echo "$filename : C source file"
+           ;;
+        o) echo "$filename : Object file"
+           ;;
+        sh) echo "$filename : Shell script"
+            ;;
+        txt) echo "$filename : Text file"
+             ;;
+        *) echo " $filename : Not processed"
+           ;;
+esac
+done

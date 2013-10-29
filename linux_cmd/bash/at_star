@@ -1,0 +1,31 @@
+# http://steve-parker.org/sh/variables2.shtml
+# $0  $1 ...$9  $#
+# $@  $*  $?
+# @ vs *
+# $@ $* results are the same with and without quotes
+# ${arr[@]} ${arr[*]} results are the same EXCEPT with quotes
+# so use @ instead of *
+
+echo "using @ without quotes"
+for item in $@
+do
+	printf "	%s\n" $item
+done
+
+echo "using * without quotes"
+for item in $*
+do
+	printf "	%s\n" $item
+done
+
+echo "using @ with quotes"
+for item in "$@"
+do
+	printf "	%s\n" $item
+done
+
+echo "using * with quotes"
+for item in "$*"
+do
+	printf "	%s\n" $item
+done
