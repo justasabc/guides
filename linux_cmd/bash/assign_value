@@ -1,0 +1,8 @@
+echo ${arg=foo}
+echo $#
+echo $1
+echo $2
+set $1 world
+echo $#
+echo $1
+echo $2

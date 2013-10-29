@@ -1,0 +1,28 @@
+# http://www.thegeekstuff.com/2010/04/unix-bash-function-examples/
+# get return value using $?
+# must return integer value
+function exist() {
+	if [ "$1" = "sim" ];then
+		return 0
+	else
+		return 1
+	fi
+}
+
+exist "sim"
+echo $?
+exist "xxx"
+echo $?
+
+# get return value using $(func)
+function exist() {
+	if [ "$1" = "sim" ];then
+		echo 'success'
+	else
+		echo 'failed'
+	fi
+}
+res=$(exist "sim")
+echo $res
+res=$(exist "xxx")
+echo $res
