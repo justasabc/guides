@@ -1,0 +1,5 @@
+kvm-img create -f raw server.img 5G
+kvm -m 512 -cdrom ubuntu.iso -drive file=server.img,if=scsi,index=0 -boot d -net nic -net user -nographic  -vnc :1
+
+kvm -m 1024 -cdrom windowsxp.iso -drive file=server.img,if=virtio,boot=on -fda virtio-win-1.1.16.vfd -boot d -nographic -vnc :0
+

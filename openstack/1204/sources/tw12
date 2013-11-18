@@ -1,0 +1,8 @@
+#tw 12.04 precise
+deb http://tw.archive.ubuntu.com/ubuntu/ precise main universe restricted multiverse 
+deb-src http://tw.archive.ubuntu.com/ubuntu/ precise main universe restricted multiverse 
+deb http://tw.archive.ubuntu.com/ubuntu/ precise-security universe main multiverse restricted 
+deb-src http://tw.archive.ubuntu.com/ubuntu/ precise-security universe main multiverse restricted 
+deb http://tw.archive.ubuntu.com/ubuntu/ precise-updates universe main multiverse restricted 
+deb-src http://tw.archive.ubuntu.com/ubuntu/ precise-updates universe main multiverse restricted
+

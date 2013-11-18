@@ -1,0 +1,10 @@
+
+grep sdb: /var/log/syslog
+# sdb: sdb1
+
+fdisk -l
+
+mkdir /media/usb
+mount -t vfat /dev/sdb1 /media/usb
+# ...
+umount /dev/sdb1

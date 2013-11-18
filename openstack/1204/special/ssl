@@ -1,0 +1,32 @@
+https://maas.ubuntu.com/images/query/precise/ephemeral/released-dl.current.txt
+https://maas.ubuntu.com/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-amd64.tar.gz
+https://maas.ubuntu.com/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-i386.tar.gz
+
+
+vi /etc/hosts 
+127.0.0.1 maas.ubuntu.com
+
+http(80) https(443 ssl)
+a2enmod ssl
+a2ensite default-ssl
+/etc/init.d/apache2 restart
+
+
+/var/www/images/query/precise/ephemeral/released-dl.current.txt
+/var/www/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-amd64.tar.gz
+/var/www/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-i386.tar.gz
+
+
+https://maas.ubuntu.com/images/query/precise/ephemeral/released-dl.current.txt
+https://maas.ubuntu.com/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-amd64.tar.gz
+https://maas.ubuntu.com/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-i386.tar.gz
+
+
+https://162.105.17.91:10443/images/query/precise/ephemeral/released-dl.current.txt
+https://162.105.17.91:10443/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-amd64.tar.gz
+https://162.105.17.91:10443/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-i386.tar.gz
+
+http://162.105.17.91:1080/images/query/precise/ephemeral/released-dl.current.txt
+http://162.105.17.91:1080/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-amd64.tar.gz
+http://162.105.17.91:1080/images/ephemeral/releases/precise/release-20120424/precise-ephemeral-maas-i386.tar.gz
+

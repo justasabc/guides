@@ -1,0 +1,377 @@
+
+
+下面将会在服务器上安装最新版的Open Stack Essex，此处为了简单起见，将计算节点和控制节点安装在一台机器上，安装的组件包括：nova、glance、keystone、dashboard，不包括swift(暂时可以不用)。以后如果扩展的话，可以增加一台物理服务器，在其上安装计算节点即可。
+
+
+
+一：准备系统
+1：物理服务器
+IBM Power Server，内存24G 硬盘500G，两块网卡，可以上网。
+2：安装Ubuntu Server
+安装最新版Ubuntu 12.04 amd64 server。系统安装之后，只需要安装ssh server就可以，便于我们远程操作。装完系统后，执行如下命令：
+apt-get update
+apt-get upgrade
+更新源里的包，更新系统。确保系统安装的是最新版本的包。
+3：设置root权限
+为了简单，全部都是用root来运行。
+sudo passwd
+就可以给root设置一个密码，直接用root来运行下面的命令。
+4安装bridge
+apt-get install bridge-utils
+5：设置网络
+编辑/etc/network/interfaces网络文件
+vim /etc/network/interfaces
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+address 192.168.1.190
+netmask 255.255.255.0
+gateway 192.168.1.1
+network 192.168.1.0
+broadcast 192.168.1.255
+dns-nameservers 192.168.1.1
+
+auto eth1
+iface eth1 inet static
+address 192.168.2.190
+netmask 255.255.255.0
+ 重启网络，让修改生效
+/etc/init.d/networking restart
+6：安装NTP
+apt-get install ntp
+编辑 /etc/ntp.conf 在末尾添加下面3行
+vim /etc/ntp.conf
+server ntp.ubuntu.com iburst
+server 127.127.1.0
+fudge 127.127.1.0 stratum 10
+重启服务
+service ntp restart
+7：安装Iscsi
+apt-get install tgt
+重启服务
+service tgt start
+安装iscsi客户端
+apt-get install open-iscsi open-iscsi-utils
+8：安装rabbitmq
+apt-get install rabbitmq-server memcached python-memcache
+apt-get install kvm libvirt-bin
+ 
+二：安装mysql和创建相关数据库
+Openstack的组件：nova，keystone，glance，都需要数据库。不过目前官方建议keystone，采用sqlite存储，而不用mysql存放。所以我们只需要创建nova和glance两个数据库就可以。
+1：安装mysql
+过程中，会提示你输入root密码。
+apt-get install -y mysql-server python-mysqldb
+让mysql支持外部访问
+sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf  
+重启服务
+service mysql restart
+2：安装phpmyadmin 
+为了方便，可以把phpmyadmin装上，可以比较方便管理数据库
+apt-get install phpmyadmin
+安装的时候，第一个提示是让你输入root的密码。
+3：创建数据库
+nova数据库，   管理员：novadbadmin，密码是：novadbpass
+glance数据库，管理员：glancedbadmin，密码是：glancedbpass
+mysql -uroot -p
+CREATE DATABASE nova;
+GRANT ALL PRIVILEGES ON nova.* TO 'novadbadmin'@'%' IDENTIFIED BY 'novadbpass' WITH GRANT OPTION;
+CREATE DATABASE glance;
+GRANT ALL PRIVILEGES ON glance.* TO 'glancedbadmin'@'%' IDENTIFIED BY 'glancedbpass' WITH GRANT OPTION;
+quit
+ 
+ 
+ 三：安装和配置keystone
+1：安装keystone
+apt-get install keystone python-keystone python-keystoneclient
+2：配置keystone
+需要修改 /etc/keystone/keystone.conf 两个地方
+默认定义的token就是ADMIN，此处使用KEZUNLIN作为token
+vim /etc/keystone/keystone.conf
+#admin_token = ADMIN
+admin_token = KEZUNLIN
+另外一个地方是
+[catalog]
+#driver = keystone.catalog.backends.sql.Catalog
+driver = keystone.catalog.backends.templated.TemplatedCatalog
+template_file = /etc/keystone/default_catalog.templates
+重启服务
+service keystone restart
+3: 导入数据
+这个比较有技术含量。通过修改devstack的keystone_data.sh 脚本。实现导入数据。
+下载脚本
+wget http://www.hastexo.com/system/files/user/4/keystone_data.sh_.txt
+mv keystone_data.sh_.txt keystone_data.sh
+chmod +x keystone_data.sh
+运行脚本, 如果你修改的默认的用户名和密码，你需要修改脚本。修改两个地方
+第一个是登录dashboard的admin的密码
+第二个就是keystone的token
+#ADMIN_PASSWORD=${ADMIN_PASSWORD:-hastexo}
+ADMIN_PASSWORD=${ADMIN_PASSWORD:-kezunlin}
+SERVICE_PASSWORD=${SERVICE_PASSWORD:-$ADMIN_PASSWORD}
+#export SERVICE_TOKEN="hastexo"
+export SERVICE_TOKEN="KEZUNLIN"
+export SERVICE_ENDPOINT="http://localhost:35357/v2.0"
+SERVICE_TENANT_NAME=${SERVICE_TENANT_NAME:-service}
+
+运行脚本
+./keystone_data.sh
+keystone --tenant=admin --username=admin --password=kezunlin  --auth_url=http://127.0.0.1:5000/v2.0 user-list
++----------------------------------+---------+--------------------+--------+
+|                id                | enabled |       email        |  name  |
++----------------------------------+---------+--------------------+--------+
+| 2b0d79fa05a74a2ca205294060e4fe18 | True    | nova@hastexo.com   | nova   |
+| 7983720f688a41a1abf28d712c3b6f6e | True    | demo@hastexo.com   | demo   |
+| 7b232a0fdefc46c4a1f127b094c8c1ff | True    | glance@hastexo.com | glance |
+| f7f3454f91d542a9b691f1a24b1d8be8 | True    | admin@hastexo.com  | admin  |
++----------------------------------+---------+--------------------+--------+
+看到这些，就说明keystone安装正常。
+keystone --tenant=admin --username=admin --password=kezunlin  --auth_url=http://127.0.0.1:5000/v2.0 tenant-list 
+keystone --tenant=admin --username=admin --password=kezunlin  --auth_url=http://127.0.0.1:5000/v2.0 role-list
+
+此外，还可以使用crul工具来验证keystone是否安装成功
+curl -d '{"auth": {"tenantName": "admin", "passwordCredentials":{"username": "admin", "password": "kezunlin"}}}' -H "Content-type: application/json" http://127.0.0.1:35357/v2.0/tokens | python -mjson.tool
+
+四：安装和配置glance
+1：安装软件
+apt-get install glance glance-api glance-client glance-common glance-registry python-glance
+2：配置/etc/glance/glance-api-paste.ini 
+修改文件最后3行，这些设置都是keystone导入数据的时候设置的。
+vim /etc/glance/glance-api-paste.ini 
+#admin_tenant_name = %SERVICE_TENANT_NAME% 
+#admin_user = %SERVICE_USER% 
+#admin_password = %SERVICE_PASSWORD%
+admin_tenant_name = admin
+admin_user = admin
+admin_password = kezunlin
+ 
+3：设置 /etc/glance/glance-registry-paste.ini
+也是修改文件最后3行，和上面是一样的。
+vim /etc/glance/glance-registry-paste.ini 
+#admin_tenant_name = %SERVICE_TENANT_NAME% 
+#admin_user = %SERVICE_USER% 
+#admin_password = %SERVICE_PASSWORD%
+admin_tenant_name = admin
+admin_user = admin
+admin_password = kezunlin
+
+4：配置/etc/glance/glance-registry.conf
+vim /etc/glance/glance-registry.conf
+#sql_connection = sqlite:////var/lib/glance/glance.sqlite
+sql_connection = mysql://glancedbadmin:glancedbpass@192.168.1.190/glance
+在末尾添加两行
+[paste_deploy]
+flavor = keystone
+5：配置/etc/glance/glance-api.conf
+vim /etc/glance/glance-api.conf
+在末尾添加两行
+[paste_deploy]
+flavor = keystone
+6：同步数据库
+目前glance 需要手工同步数据库。
+glance-manage version_control 0
+glance-manage db_sync
+重启服务
+service glance-api restart && service glance-registry restart
+
+7：验证glance服务是否正常
+export OS_TENANT_NAME=admin
+export OS_USERNAME=admin
+export OS_PASSWORD=kezunlin
+export OS_AUTH_URL="http://localhost:5000/v2.0/"
+检查检查
+env | grep OS_
+OS_PASSWORD=kezunlin
+OS_AUTH_URL=http://localhost:5000/v2.0/
+OS_USERNAME=admin
+OS_TENANT_NAME=admin
+8：下载镜像并上传
+下载镜像
+wget http://cloud-images.ubuntu.com/precise/current/precise-server-cloudimg-amd64-disk1.img
+上传镜像
+glance add name="Ubuntu 12.04 cloudimg amd64" is_public=true container_format=ovf disk_format=qcow2 < /root/precise-server-cloudimg-amd64-disk1.img
+查看镜像
+glance index
+就可以看到上传的image。
+  
+五：安装配置nova
+1:安装nova相关组件
+apt-get install nova-api nova-cert nova-common nova-compute nova-compute-kvm nova-doc nova-network nova-objectstore nova-scheduler  nova-volume python-nova python-novaclient  nova-consoleauth python-novnc novnc
+2：配置 /etc/nova/nova.conf
+vim /etc/nova/nova.conf
+--dhcpbridge_flagfile=/etc/nova/nova.conf
+--dhcpbridge=/usr/bin/nova-dhcpbridge
+--logdir=/var/log/nova
+--state_path=/var/lib/nova
+--lock_path=/var/lock/nova
+--allow_admin_api=true
+--use_deprecated_auth=false
+--auth_strategy=keystone
+--scheduler_driver=nova.scheduler.simple.SimpleScheduler
+--s3_host=192.168.1.190
+--ec2_host=192.168.1.190
+--rabbit_host=192.168.1.190
+--cc_host=192.168.1.190
+--nova_url=http://192.168.1.190:8774/v1.1/
+--routing_source_ip=192.168.1.190
+--glance_api_servers=192.168.1.190:9292
+--image_service=nova.image.glance.GlanceImageService
+--iscsi_ip_prefix=192.168.2
+--sql_connection=mysql://novadbadmin:novadbpass@192.168.1.190/nova
+--ec2_url=http://192.168.1.190:8773/services/Cloud
+--keystone_ec2_url=http://192.168.1.190:5000/v2.0/ec2tokens
+--api_paste_config=/etc/nova/api-paste.ini
+--libvirt_type=kvm
+#--libvirt_type=qemu
+--libvirt_use_virtio_for_bridges=true
+--start_guests_on_host_boot=true
+--resume_guests_state_on_host_boot=true
+--vnc_enabled=true
+--vncproxy_url=http://192.168.1.190:6080
+--vnc_console_proxy_url=http://192.168.1.190:6080
+
+ # network specific settings
+--network_manager=nova.network.manager.FlatDHCPManager
+--public_interface=eth0
+--flat_interface=eth1
+--flat_network_bridge=br100
+--fixed_range=192.168.2.192/27
+--floating_range=192.168.1.192/27
+--network_size=32
+--flat_network_dhcp_start=192.168.2.193
+--flat_injected=False
+--force_dhcp_release
+--iscsi_helper=tgtadm
+--connection_type=libvirt
+--root_helper=sudo nova-rootwrap
+--verbose
+3：配置/etc/nova/api-paste.ini
+也是修改文件最后3行，
+vim /etc/nova/api-paste.ini
+#admin_tenant_name = %SERVICE_TENANT_NAME% 
+#admin_user = %SERVICE_USER% 
+#admin_password = %SERVICE_PASSWORD%
+admin_tenant_name = admin
+admin_user = admin
+admin_password = kezunlin
+4：停止和重启nova相关服务
+for a in libvirt-bin nova-network nova-compute nova-api nova-objectstore nova-scheduler nova-volume nova-vncproxy; do service "$a" stop; done
+for a in libvirt-bin nova-network nova-compute nova-api nova-objectstore nova-scheduler nova-volume nova-vncproxy; do service "$a" start; done
+
+5：同步数据库
+nova-manage db sync
+创建网络
+nova-manage network create private --fixed_range_v4=192.168.1.192/27 --num_networks=1 --bridge=br100 --bridge_interface=eth1 --network_size=32 
+设置权限
+chown -R nova:nova /etc/nova
+再重启相关服务
+for a in libvirt-bin nova-network nova-compute nova-api nova-objectstore nova-scheduler nova-volume nova-vncproxy; do service "$a" stop; done
+
+for a in libvirt-bin nova-network nova-compute nova-api nova-objectstore nova-scheduler nova-volume nova-vncproxy; do service "$a" start; done
+ 
+6：检查nova服务
+nova list
+nova image-list
+ 
+六：创建并访问虚拟机实例
+1: 创建密钥
+ssh-keygen
+一路回车，就可以了。
+2：上传密钥到数据库
+nova keypair-add --pub_key .ssh/id_rsa.pub key1
+这个时候，就可以查看到上传的key
+nova keypair-list
++------+-------------------------------------------------+
+| Name |                   Fingerprint                   |
++------+-------------------------------------------------+
+| key1 | 00:7e:41:a2:95:68:3d:03:a6:5b:df:84:a5:b9:06:32 |
++------+-------------------------------------------------+
+4：开始创建虚拟机
+查看image list
+nova image-list
+查看flavor-list
+ nova flavor-list
+创建虚拟机
+nova boot --flavor 2 --image efdec9aa-704c-45be-8d16-5c2bf20a4c63 --key_name key1 vm1
+查看一下创建的虚拟机
+nova list
++--------------------------------------+------+--------+-----------------------+
+|                  ID                  | Name | Status |        Networks       |
++--------------------------------------+------+--------+-----------------------+
+| 999292bc-a25e-4493-b9ad-0ca864049afe | vm1  | ACTIVE | private=192.168.2.194 |
++--------------------------------------+------+--------+-----------------------+
+nova show vm1 
+ 
+ssh 访问虚拟机
+ssh -i .ssh/id_rsa ubuntu@192.168.2.194
+这样就可以登录服务器。
+
+
+设置Floating IP
+创建Floating IP网段
+nova-manage floating create --ip_range=192.168.1.192/27
+分配一个Floating IP
+nova floating-ip-create
++---------------+-------------+----------+------+
+|       Ip      | Instance Id | Fixed Ip | Pool |
++---------------+-------------+----------+------+
+| 192.168.1.193 | None        | None     | nova |
++---------------+-------------+----------+------+
+关联Floating IP到虚拟机
+nova add-floating-ip vm1 192.168.1.193
+查看虚拟机实例的网络IP
+nova list
++--------------------------------------+------+--------+--------------------------------------+
+|                  ID                  | Name | Status |               Networks               |
++--------------------------------------+------+--------+--------------------------------------+
+| 999292bc-a25e-4493-b9ad-0ca864049afe | vm1  | ACTIVE | private=192.168.2.194, 192.168.1.193 |
++--------------------------------------+------+--------+--------------------------------------+
+设置安全组以便于能够通过Floating IP访问虚拟机实例
+nova secgroup-add-rule default tcp 22 22 0.0.0.0/0
++-------------+-----------+---------+-----------+--------------+
+| IP Protocol | From Port | To Port |  IP Range | Source Group |
++-------------+-----------+---------+-----------+--------------+
+| tcp         | 22        | 22      | 0.0.0.0/0 |              |
++-------------+-----------+---------+-----------+--------------+
+nova secgroup-add-rule default icmp -1 -1 0.0.0.0/0
++-------------+-----------+---------+-----------+--------------+
+| IP Protocol | From Port | To Port |  IP Range | Source Group |
++-------------+-----------+---------+-----------+--------------+
+| icmp        | -1        | -1      | 0.0.0.0/0 |              |
++-------------+-----------+---------+-----------+--------------+
+查看安全组
+nova secgroup-list
++---------+-------------+
+|   Name  | Description |
++---------+-------------+
+| default | default     |
++---------+-------------+
+查看安全组规则
+nova secgroup-list-rules default
++-------------+-----------+---------+-----------+--------------+
+| IP Protocol | From Port | To Port |  IP Range | Source Group |
++-------------+-----------+---------+-----------+--------------+
+| icmp        | -1        | -1      | 0.0.0.0/0 |              |
+| tcp         | 22        | 22      | 0.0.0.0/0 |              |
++-------------+-----------+---------+-----------+--------------+
+通过Floating IP访问虚拟机实例
+ssh -i .ssh/id_rsa ubuntu@192.168.1.193
+
+七：安装和配置Dashbaord
+ 1：安装dashbaord
+apt-get -y install libapache2-mod-wsgi openstack-dashboard
+配置文件
+vim /etc/openstack-dashboard/local_settings.py 
+#CACHE_BACKEND = 'locmem://'
+CACHE_BACKEND = 'memcached://127.0.0.1:11211/'
+重启Apache服务
+service apache2 restart
+接着就可以通过网页来访问Dashboard
+http://192.168.1.190
+http://127.0.0.1
+user:admin
+pass:kezunlin
+图
+
+ 
