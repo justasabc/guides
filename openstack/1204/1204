@@ -1,12 +1,47 @@
+# A quick guide to install openstack essex on ubuntu 12.04
+#----------------------------------------------------------------------
+# http://www.hastexo.com/resources/docs/installing-openstack-grizzly-20131-ubuntu-1204-precise-pangolin
+# http://www.chenshake.com/ubuntu12-04-2-installed-openstack-grizzly-bridge-mode/
+# http://www.mirantis.com/blog/openstack-networking-flatmanager-and-flatdhcpmanager/
+#----------------------------------------------------------------------
 # 1204
+
+#====================================================
+# Step 1: Prepare your System
+#====================================================
 apt-get update
 apt-get -y upgrade
 apt-get -y install bridge-utils
 
 vim /etc/network/interfaces
-# ...
+#**************************************************
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet manual
+	pre-up ifconfig eth0 up
+	post-down ifconfig eth0 down
+
+auto br100
+iface br100 inet static
+        address 192.168.1.200
+        netmask 255.255.255.0
+        network 192.168.1.0
+        broadcast 192.168.1.255
+        gateway 192.168.1.1
+	dns-search example.com test.example.com
+	dns-nameservers 192.168.1.1
+
+        bridge_ports eth0
+        bridge_fd 9
+        bridge_hello 2
+        bridge_maxage 12
+        bridge_stp off
+#**************************************************
 /etc/init.d/networking restart
 
+# install ntp and configure
 apt-get -y install ntp
 vim /etc/ntp.conf
 server ntp.ubuntu.com iburst
@@ -14,36 +49,37 @@ server 127.127.1.0
 fudge 127.127.1.0 stratum 10
 
 service ntp restart
-
+/etc/init.d/ntp restart
+ 
+# install tgt target (we'll need it for nova-volume) 
 apt-get -y install tgt
 service tgt restart
 
+# install iscsi client
 apt-get -y install open-iscsi open-iscsi-utils
 
+# We'll also need RabbitMQ, an AMQP-implementation, as that is what all OpenStack components use to communicate with eath other, and memcached.
 apt-get -y install rabbitmq-server memcached python-memcache
+
+# As we'll also want to run KVM virtual machines on this very same host, we'll need KVM and libvirt, which OpenStack uses to control virtual machines.
 apt-get -y install kvm libvirt-bin
 
+#====================================================
+#Step 2: Install MySQL and create the necessary databases and users
+#====================================================
+# Nova and glance will use MySQL to store their runtime data. To make sure they can do that, we'll install and set up MySQL
 apt-get install -y mysql-server python-mysqldb
+# Allow other machines to be able to talk to that MySQL database
 sed -i 's/127.0.0.1/0.0.0.0/g' /etc/mysql/my.cnf  
 service mysql restart
 
-
-# how to install phpmyadmin
-apt-get -y install phpmyadmin
-apt-get -y purge phpmyadmin
-dpkg-reconfigure -plow phpmyadmin
-ln -s /etc/phpmyadmin/apache.conf /etc/apache2/conf.d/phpmyadmin.conf
-/etc/init.d/apache2 reload
-# (root,rootpass)(phpmyadmin,phpmyadmin)
-http://localhost/phpmyadmin
-(root,rootpass)
-
-mysql -u root -prootpass
-# 12.04 (root,rootpass) 
+mysql -u root -prootpass <<EOF
 CREATE DATABASE nova;
 GRANT ALL PRIVILEGES ON nova.* TO 'novadbadmin'@'%' IDENTIFIED BY 'novadbpass' WITH GRANT OPTION;
 CREATE DATABASE glance;
 GRANT ALL PRIVILEGES ON glance.* TO 'glancedbadmin'@'%' IDENTIFIED BY 'glancedbpass' WITH GRANT OPTION;
+EOF
+
 # other
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' IDENTIFIED BY 'rootpass' WITH GRANT OPTION;
 SET PASSWORD FOR 'root'@'%' =PASSWORD('rootpass');
