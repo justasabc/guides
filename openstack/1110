@@ -32,7 +32,6 @@ sysctl net.ipv4.ip_forward
 # restart network
 /etc/init.d/networking restart
 
-
 # install packages
 apt-get -y install ntp
 vim /etc/ntp.conf
