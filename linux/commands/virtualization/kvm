@@ -1,8 +1,10 @@
 #-----------------------------------------------------------
 # https://help.ubuntu.com/community/KVM/Installation
 # http://www.howtogeek.com/117635/
-# http://jiangli.easymorse.com/?p=990
 # http://blog.csdn.net/starshine/article/details/6990599
+# http://www.sysprobs.com/disable-enable-virtualization-technology-bios
+# http://www.linux-kvm.org/page/FAQ#How_can_I_tell_if_I_have_Intel_VT_or_AMD-V.3F
+# http://askubuntu.com/questions/103965/how-to-determine-if-cpu-vt-extensions-enabled-in-bios
 #-----------------------------------------------------------
 
 #If you’re using Linux, you don’t need VirtualBox or VMware to create virtual machines. You can use KVM – the kernel-based virtual machine – to run both Windows and Linux in virtual machines.
@@ -15,20 +17,75 @@
 #Check that your CPU supports hardware virtualization
 #To run KVM, you need a processor that supports hardware virtualization. Intel and AMD both have developed extensions for their processors, deemed respectively Intel VT-x (code name Vanderpool) and AMD-V (code name Pacifica). To see if your processor supports one of these, you can review the output from this command:
 
+## 1)Whether linux kernel >=2.6.15
+#/proc/cpuinfo only shows virtualization capabilities starting with Linux 2.6.15 (Intel) and Linux 2.6.16 (AMD). Use the `uname -r` command to query your kernel version.
+uname -r
+#3.2.0-29-generic
+
+# 3.2>2.6
+
+## 2)Whether support virtualization
 egrep -c "(svm|vmx)" /proc/cpuinfo
-0
+#16
+
 #If 0 it means that your CPU doesn't support hardware virtualization.
 #If 1 or more it does - but you still need to make sure that virtualization is enabled in the BIOS.
 
-#By default, if you booted into XEN kernel it will not display svm or vmx flag using the grep command. To see if it is enabled or not from xen, enter:
-#cat /sys/hypervisor/properties/capabilities
+# OR
+lscpu | grep Virtualization
+#Virtualization:        VT-x
 
 #OR
 apt-get install cpu-checker 
 kvm-ok
-#INFO: Your CPU does not support KVM extensions
-#KVM acceleration can NOT be used
-# You can still run virtual machines, but it'll be much slower without the KVM extensions.
+#INFO: /dev/kvm does not exist
+#HINT:   sudo modprobe kvm_intel
+#INFO: Your CPU supports KVM extensions
+#KVM acceleration can be used
+
+## 3)Whether enabled virtualization in bios
+kvm-ok
+#INFO: /dev/kvm does not exist
+#HINT:   sudo modprobe kvm_intel
+#INFO: Your CPU supports KVM extensions
+#KVM acceleration can be used
+
+# how to enable
+# manually enable it in bios
+#******************************************************
+#******************************************************
+#Enabling virtualization extensions in BIOS
+#Reboot the computer and open the system's BIOS menu. This can usually be done by pressing the delete key, the F1 key or Alt and F4 keys depending on the system.
+#Enabling the virtualization extensions in BIOS
+#Open the Processor submenu The processor settings menu may be hidden in the Chipset, Advanced CPU Configuration or Northbridge.
+#Enable Intel Virtualization Technology (also known as Intel VT-x). AMD-V extensions cannot be disabled in the BIOS and should already be enabled. The virtualization extensions may be labeled Virtualization Extensions, Vanderpool or various other names depending on the OEM and system BIOS.
+#Enable Intel VT-d or AMD IOMMU, if the options are available. Intel VT-d and AMD IOMMU are used for PCI device assignment.
+#Select Save & Exit.
+#Reboot the machine.
+#******************************************************
+#******************************************************
+apt-get install kvm qemu
+
+# temporarily load intel module(depends on kvm module)
+modprobe kvm_intel
+
+# permanently load intel module
+vim /etc/modules
+#****************************************
+#****************************************
+# added by ke on 2013/11/25
+kvm_intel
+#****************************************
+#****************************************
+
+lsmod | grep kvm_intel
+#kvm_intel             137721  0 
+#kvm                   415549  1 kvm_intel
+
+# view results
+kvm-ok
+#INFO: /dev/kvm exists
+#KVM acceleration can be used
 
 #==========================================
 #Use a 64 bit kernel (if possible)
@@ -39,13 +96,14 @@ kvm-ok
 #Also, a 64-bit system can host both 32-bit and 64-bit guests. A 32-bit system can only host 32-bit guests.
 #To see if your processor is 64-bit, you can run this command:
 egrep -c " lm " /proc/cpuinfo
-1
+16
 #If 0 is printed, it means that your CPU is not 64-bit.
 #If 1 or higher, it is. Note: lm stands for Long Mode which equates to a 64-bit CPU.
 
 #Now see if your running kernel is 64-bit, just issue the following command:
 uname -m
 x86_64
+
 lscpu
 #x86_64 indicates a running 64-bit kernel. If you use see i386, i486, i586 or i686, you're running a 32-bit kernel.
 #Note: x86_64 is synonymous with amd64.
@@ -53,7 +111,7 @@ lscpu
 #==========================================
 #Install Necessary Packages
 #==========================================
-apt-get -y install kvm libvirt-bin
+apt-get -y install libvirt-bin
 
 # The above command will create 2 groups: kvm and libvirtd
 ls /etc/group
@@ -62,12 +120,18 @@ ls /etc/group
 
 # add current user(root) to libvirtd
 adduser root libvirtd
+#Adding user `root' to group `libvirtd' ...
+#Adding user root to group libvirtd
+#Done.
 # or
 adduser 'id -un' libvirtd
 
-ls /etc/group
+cat /etc/group
 #libvirtd:x:131:ke,root
 
+# Optional
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Install vmbuilder
 #The name of the package that we need to install is python-vm-builder:
 # Old version is ubuntu-vm-builder
@@ -77,6 +141,8 @@ vmbuilder
 
 apt-get install -y virt-manager virt-viewer
 virt-manger
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # After the installation, you need to relogin so that your user becomes an effective member of libvirtd user groups. The members of this group can run virtual machines.
 
