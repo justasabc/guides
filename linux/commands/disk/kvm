@@ -30,7 +30,6 @@ kvm-ok
 #KVM acceleration can NOT be used
 # You can still run virtual machines, but it'll be much slower without the KVM extensions.
 
-
 #==========================================
 #Use a 64 bit kernel (if possible)
 #==========================================

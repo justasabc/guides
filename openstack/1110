@@ -531,9 +531,3 @@ Admin API listening on 0.0.0.0:35357
 #Testing if keystone is working.
  curl -d '{"auth": {"tenantName": "adminTenant", "passwordCredentials":{"username": "adminUser", "password": "adminPass"}}}' -H "Content-type: application/json" http://192.168.1.170:35357/v2.0/tokens | python -mjson.tool
 
-
-
-
-
-
-
