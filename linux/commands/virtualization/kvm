@@ -52,6 +52,8 @@ kvm-ok
 
 # how to enable
 # manually enable it in bios
+Intel(R) Virtualization Tech [Enabled]
+VT-d [Enabled]
 #******************************************************
 #******************************************************
 #Enabling virtualization extensions in BIOS
@@ -113,6 +115,9 @@ lscpu
 #==========================================
 apt-get -y install libvirt-bin
 
+# make sure libvirtd running
+service libvirt-bin status
+
 # The above command will create 2 groups: kvm and libvirtd
 ls /etc/group
 #kvm:x:130:
@@ -146,6 +151,7 @@ virt-manger
 
 # After the installation, you need to relogin so that your user becomes an effective member of libvirtd user groups. The members of this group can run virtual machines.
 
+# Verify KVM running successfully
 # Log out and log back again
 
 #After running this command, log out and log back in. Run this command after logging back in and you should see an empty list of virtual machines. This indicates that everything is working correctly.

@@ -1,9 +1,6 @@
 # bios settings fro VT
-# http://www.aojgame.com/daily/2044.html
-# http://blog.csdn.net/korder/article/details/9709205
 # http://rolandqu.blog.51cto.com/3477736/942923
 # http://springsfeng.iteye.com/blog/1481861
-# 
 
 前期准备
 
@@ -65,7 +62,7 @@ KVM acceleration can NOT be used
     将输出：
     Id Name State
     如果提示你没权限操作，则需要将当前操作账户添加进libvirtd组，命令为：
-    sudo usermod -G libvirtd -a fdc
+    sudo adduser 'id -un' libvirtd
     (4) 启动KVMGUI
     virt-manager
     (5) 确认libvirtld后台服务是否启动
