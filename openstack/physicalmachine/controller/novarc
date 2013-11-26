@@ -1,0 +1,12 @@
+export MASTER=192.168.1.200
+export MYSQL_PASSWORD=rootpass
+export ADMIN_TOKEN=KEZUNLIN
+export ADMIN_PASSWORD=kezunlin
+export OS_TENANT_NAME=admin
+export OS_USERNAME=admin
+export OS_PASSWORD=kezunlin
+export OS_AUTH_URL="http://localhost:35357/v2.0/"
+export OS_REGION_NAME=RegionOne
+export SERVICE_TOKEN=KEZUNLIN
+export SERVICE_PASSWORD=kezunlin
+export SERVICE_ENDPOINT="http://localhost:35357/v2.0"

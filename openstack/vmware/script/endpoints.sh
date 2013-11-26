@@ -18,7 +18,6 @@
 # On Debian-based systems the full text of the Apache version 2.0 
 # license can be found in `/usr/share/common-licenses/Apache-2.0'.
 
-# MySQL definitions
 MYSQL_HOST=192.168.1.200
 MYSQL_DATABASE=keystone
 MYSQL_USER=keystonedbadmin
