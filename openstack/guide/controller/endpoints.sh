@@ -26,7 +26,7 @@ MYSQL_PASSWORD=keystonedbpass
 MASTER=192.168.1.188
 KEYSTONE_REGION=RegionOne
 SWIFT_MASTER=192.168.1.188
-#export SERVICE_ENDPOINT="http://localhost:35357/v2.0" 
+#export SERVICE_ENDPOINT="http://192.168.1.188:35357/v2.0" 
 #export SERVICE_TOKEN=KEZUNLIN
 
 while getopts "u:D:p:m:K:R:E:S:T:vh" opt; do
