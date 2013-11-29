@@ -131,7 +131,7 @@ adduser root libvirtd
 # or
 adduser 'id -un' libvirtd
 
-cat /etc/group
+cat /etc/group | grep libvirtd
 #libvirtd:x:131:ke,root
 
 # Optional

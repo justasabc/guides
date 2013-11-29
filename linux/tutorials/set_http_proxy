@@ -1,0 +1,2 @@
+export http_proxy='http://192.168.1.184:8087'
+export https_proxy='https://192.168.1.184:8087'
