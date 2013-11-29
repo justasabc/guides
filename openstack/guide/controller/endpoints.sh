@@ -18,15 +18,16 @@
 # On Debian-based systems the full text of the Apache version 2.0 
 # license can be found in `/usr/share/common-licenses/Apache-2.0'.
 
-MYSQL_HOST=192.168.1.200
+# MySQL definitions
+MYSQL_HOST=192.168.1.188
 MYSQL_DATABASE=keystone
 MYSQL_USER=keystonedbadmin
 MYSQL_PASSWORD=keystonedbpass
-MASTER=192.168.1.200
+MASTER=192.168.1.188
 KEYSTONE_REGION=RegionOne
-export SERVICE_ENDPOINT="http://localhost:35357/v2.0" 
-SWIFT_MASTER=192.168.1.200
-export SERVICE_TOKEN=KEZUNLIN
+SWIFT_MASTER=192.168.1.188
+#export SERVICE_ENDPOINT="http://localhost:35357/v2.0" 
+#export SERVICE_TOKEN=KEZUNLIN
 
 while getopts "u:D:p:m:K:R:E:S:T:vh" opt; do
   case $opt in
