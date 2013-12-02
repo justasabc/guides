@@ -1,0 +1,10 @@
+#!/bin/bash
+read filename
+if [ -f $filename ]
+then
+        echo $filename
+        sed 
+else
+        echo "${filename} not exist"
+fi
+

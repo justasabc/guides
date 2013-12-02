@@ -1,0 +1,5 @@
+#!/bin/bash
+default_name='kezunlin'
+read -p "Enter Your Name: [$default_name] " name
+name=${name:-$default_name}
+echo $name

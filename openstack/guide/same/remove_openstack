@@ -1,4 +1,4 @@
-apt-get purge -y mysql-server python-mysqldb
+apt-get -y purge mysql-server python-mysqldb
 apt-get -y purge bridge-utils
 apt-get -y purge ntp
 apt-get -y purge tgt
@@ -9,8 +9,6 @@ apt-get -y purge keystone python-keystone python-keystoneclient
 apt-get -y purge glance glance-api glance-client glance-common glance-registry python-glance
 apt-get -y purge nova-api nova-cert nova-common nova-compute nova-compute-kvm nova-doc nova-network nova-objectstore nova-scheduler nova-volume nova-consoleauth novnc python-nova python-novaclient 
 apt-get -y purge libapache2-mod-wsgi openstack-dashboard
-apt-get -y autoremove
-
 echo "====================================================================="
 rm -rf /var/log/keystone*
 rm -rf /var/log/glance*

@@ -1,0 +1,31 @@
+# http://stackoverflow.com/questions/5274343/replacing-environment-variables-in-a-properties-file
+line="--vncserver_listen=${HOST_IP}"
+echo $line
+
+# cat somefile | while read line; do echo $(eval echo `echo $line`); done > somefile.replaced
+
+function replace_file(){
+        filename=$1
+        newfile=$2
+        cat "$filename" | while read line; do echo $(eval echo `echo $line`); done > "$newfile"
+}
+
+function replace_nova_conf(){
+        src=./nova/nova.conf_template
+        #dst=/etc/nova/nova.conf
+        dst=nova.conf
+        cp $src $dst
+        replace_file $src $dst
+}
+
+function main(){
+        replace_nova_conf 
+}
+
+main $@
+
+# Recommanded methods
+# replace env to value
+file=/etc/nova/nova.conf
+sed -i '/${HOST_IP}/{s|${HOST_IP}|'"${HOST_IP}"'|g}' $file
+

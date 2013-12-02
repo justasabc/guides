@@ -1,0 +1,10 @@
+#!/bin/bash
+default_controller_ip='192.168.1.188'
+default_host_ip='192.168.1.188'
+read -p "controller ip: [$default_controller_ip] " controller_ip
+CONTROLLER_IP=${controller_ip:-$default_controller_ip}
+read -p "host ip: [$default_host_ip] " host_ip
+HOST_IP=${host_ip:-$default_host_ip}
+export CONTROLLER_IP
+export HOST_IP
+

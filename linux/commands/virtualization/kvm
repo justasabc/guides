@@ -69,6 +69,7 @@ VT-d [Enabled]
 apt-get install kvm qemu
 
 # temporarily load intel module(depends on kvm module)
+modprobe kvm
 modprobe kvm_intel
 
 # permanently load intel module
@@ -76,6 +77,7 @@ vim /etc/modules
 #****************************************
 #****************************************
 # added by ke on 2013/11/25
+kvm
 kvm_intel
 #****************************************
 #****************************************

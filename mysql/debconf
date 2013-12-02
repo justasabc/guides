@@ -1,0 +1,7 @@
+# http://blog.delgurth.com/2009/01/19/pre-loading-debconf-values-for-easy-installation/
+apt-get -y install debconf-utils
+defconf-set-selections
+defconf-get-selections | grep mysql
+
+vim /var/cache/debconf/passwords.dat
+vim /var/cache/dbconfig-common/
