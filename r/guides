@@ -1,0 +1,290 @@
+ apt-get install r-base-core
+ apt-get install r-base r-base-dev
+
+# usage
+help(xxx)
+?xxx
+example(xxx)
+help.start()
+apropos(“partword”)
+search()
+attach()/ detach()
+ls()
+install.packages(‘xxx’)
+install.packages("mboost")
+library(mboost)
+
+install.packages("scatterplot3d")
+scatterplot3d
+
+help(xxx)
+detach(package:xxx)
+
+with(df,column)
+head() /tail()
+
+iris
+
+names()
+row.names()
+
+colnames()
+rownames()
+str()
+attributes()
+summary()
+
+# rows and columns are not really appropriate for lists, which contain items of differing lengths.
+dimnames()
+dim()
+dimnames(bird) = list(NULL, habitats)
+
+# rotate data tables
+t()
+
+# Vectors are treated like columns
+#  In any event, when you apply a t() command you get a matrix object as a result.
+
+#  R ignores spaces, so when you type your math expressions there is  
+no need to include them.
+
+a = 3+5
+a <- 3+5
+
+4+6 -> b
+
+# The simplest way to create a sample is to use the c() command. You can think of this as short for combine or concatenate, which is essentially what it does.
+
+array = c(1,3,5,7)
+
+# There is no difference between using single and double quotes;
+# Case sensitive
+# If you mix text and numbers, the entire data object becomes a text variable and the numbers are converted to text
+
+data = scan()
+#  press the Enter key twice to finish
+
+data = scan(what = 'character')
+data = scan(what = 'char')
+
+# from clipboard
+> data = scan(sep=',')
+1: 23,17,12.5,11,17,12,14.5,9
+9: 11,9,12.5,14.5,17,8,21
+16: 
+Read 15 items
+
+# read file from disk
+data = scan(file='1.txt')
+
+getwd()
+setwd('root/ke')
+dir()
+list.files()
+
+data8 = scan(file.choose(), what = 'char', sep = ',')
+# Using the file.choose() instruction does not work on Linux operating 
+systems.
+
+# numeric/character/factor/
+# vector/matrix/dataframe/list/
+
+# the read.table() command is actually the basic R command for reading data
+read.table()
+read.csv()
+read.delim()
+# my.list = read.table(file.choose(), row.names = 1, header = TRUE,
+ sep = '\t'
+
+# In statistical parlance the species column is called the response variable and the cut column is the predictor variable (or predictor factor)
+
+# Viewing All Objects
+ls() objects()
+rm(xxx) remove(xxx)
+
+# At times it’s important to do some spring cleaning and remove everything. You can use the rm() command like so:
+rm(list = ls())
+
+#  R regards these as numeric or character.
+
+# R calls these character values.
+> data8
+ [1] "Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec"
+
+# These items display as plain text and have the quote marks to remind you. However, another type of non-numeric data is called a factor:
+> cut
+[1] mow   mow   mow   mow   mow   unmow unmow unmow unmow
+Levels: mow unmow
+
+#Recall the data that you met previously:
+> grass
+  species   cut
+1      12   mow
+2      15   mow
+3      17   mow
+4      11   mow
+5      15   mow
+6       8 unmow
+7       9 unmow
+8       7 unmow
+9       9 unmow
+
+# When R reads the data from the data file it assumes that the text column corresponds to the numeric column and sets the text to a factor rather than as a character. In most instances this is what you want for statistical analyses. However, you can elect to read any column as plain text using the as.is = instruction. To do this for the previous mowing data, for example, you would type:
+
+>grass2 = read.csv(file.choose(), as.is = 2)
+
+# Here you tell R that the second column in your data file is to be regarded as plain text rather than a factor.
+
+
+# converting Between number and text data
+
+> cut
+[1] mow   mow   mow   mow   mow   unmow unmow unmow unmow
+Levels: mow unmow
+> cut2 = as.character(cut)
+> cut2
+[1] "mow"   "mow"   "mow"   "mow"   "mow"   "unmow" "unmow" "unmow" "unmow"
+> cut3 = as.factor(cut2)
+> cut3
+[1] mow   mow   mow   mow   mow   unmow unmow unmow unmow
+Levels: mow unmow
+
+
+> data7
+[1] 23.0 17.0 12.5 11.0 17.0 12.0 14.5  9.0 11.0 9.0 12.5 14.5 17.0 8.0 21.0
+> data7i = as.integer(data7)
+> data7i
+ [1] 23 17 12 11 17 12 14  9 11  9 12 14 17  8 21
+> data7n = as.numeric(data7i)
+> data7n
+ [1] 23 17 12 11 17 12 14  9 11  9 12 14 17  8 21
+
+> cut
+[1] mow   mow   mow   mow   mow   unmow unmow unmow unmow
+> cut.n = as.numeric(cut)
+> cut.n
+[1] 1 1 1 1 1 2 2 2 2
+
+
+> data8
+ [1] "Jan" "Feb" "Mar" "Apr" "May" "Jun" "Jul" "Aug" "Sep" "Oct" "Nov" "Dec"
+> data8n = as.numeric(data8)
+Warning message:
+NAs introduced by coercion 
+> data8n
+ [1] NA NA NA NA NA NA NA NA NA NA NA NA
+
+
+> data8c = as.numeric(as.factor(data8))
+> data8c
+ [1]  5  4  8  1  9  7  6  2 12 11 10  3
+
+
+# The list is helpful for occasions where you have objects of varying length that you want to tie together.
+
+str(xxx)
+class(xxx)
+
+history(max.show = 25)
+savehistory(file = '.Rhistory')
+loadhistory(file = '.Rhistory')
+
+> mylist = c('bf', 'bf.beta', 'bf.lm')
+> save(list = mylist, file = 'Desktop/butterfly.RData')
+
+# save everything
+save(list = ls(all=TRUE), file = 'filename')
+save.image(file = 'filename')
+
+load(file = ‘filename.Rdata’)
+load(file = file.choose())
+
+write() cat()
+write.table()
+write.csv()
+
+ write(data7, file = 'Desktop/data7.txt', sep = ',', ncolumns = length(data7))
+cat(data7, file = 'Desktop/data7.txt')
+
+write.table(mydata, file = 'filename', row.names = TRUE, sep = ' ', col.names = TRUE)
+write.csv(mydata, file = 'filename', row.names = TRUE, sep = ',', col.names = TRUE)
+
+
+# Writing List Objects to Disk
+dput()
+dget()
+
+
+# list----dataframe
+stack()
+unstack()
+as.list()
+
+> str(my.list)
+List of 4
+ $ mow  : int [1:5] 12 15 17 11 15
+ $ unmow: int [1:4] 8 9 7 9
+ $ data3: num [1:12] 6 7 8 7 6 3 8 9 10 7 ...
+ $ data7: num [1:15] 23 17 12.5 11 17 12 14.5 9 11 9 ...
+
+
+> my.stack = stack(my.list)
+This creates a two-column data frame:
+   values   ind
+1      12   mow
+2      15   mow
+3      17   mow
+4      11   mow
+5      15   mow
+6       8 unmow
+7       9 unmow
+8       7 unmow
+9       9 unmow
+10      6 data3
+11      7 data3
+
+names(my.stack) = c('numbers', 'sample')
+
+> unstack(my.stack)
+$data3
+[1]  6  7  8  7  6  3  8  9 10  7  6  9
+$data7
+[1] 23.0 17.0 12.5 11.0 17.0 12.0 14.5 9.0 11.0 9.0 12.5 14.5 17.0 8.0 21.0
+$mow
+[1] 12 15 17 11 15
+$unmow
+[1] 8 9 7 9
+
+
+> my.new.list = as.list(unstack(my.stack))
+
+> my.list = as.list(mow, unmow, data3, data7)
+> names(my.list) = c('mow', 'unmow', 'data3', 'data7')
+
+#=====================================================
+data type:
+numerical (numeric, integer) 
+character (factor, character)
+
+data form:
+vector 
+matrix
+dataframe 
+matrixlist
+#=====================================================
+
+which()
+seq(start, end, interval)
+sort()
+order()
+rank()
+
+
+
+# graphics
+demo()
+
+png('1.png')
+x <- 1:50 
+plot(x,log(x))
+dev.off()
